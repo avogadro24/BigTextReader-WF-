@@ -17,12 +17,12 @@ namespace BigTextReader_WF_
         {
             InitializeComponent();
             
-            
+           
         }
 
         private void Form1_Doc(object sender, EventArgs e)
         {
-            
+
         }
 
 
@@ -46,7 +46,7 @@ namespace BigTextReader_WF_
             myDialog.Filter = ".txt|*.txt|.fb2|*.fb2";
             if (myDialog.ShowDialog() == DialogResult.OK)
             {
-                FilePath = myDialog.FileName;//GET FILE PATH 
+                FilePath = myDialog.FileName;
                 textBoxPath.Text = FilePath;
             }
         }
@@ -100,9 +100,9 @@ namespace BigTextReader_WF_
 
         void CallMyPrivateDictionary()
         {
-            string assPath= Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);//получить путь 
+            string assPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);//получить путь 
 
-            Assembly myAssembly = Assembly.LoadFile(assPath+@"\ClassLibrary1.dll");// подключение библиотеки
+            Assembly myAssembly = Assembly.LoadFile(assPath + @"\ClassLibrary1.dll");// подключение библиотеки
             Type calcType = myAssembly.GetType("ClassLibrary1.Class1");//получить тип класса
             object calcInstance = Activator.CreateInstance(calcType);//создать экземпляр
 
@@ -156,14 +156,14 @@ namespace BigTextReader_WF_
             }
         }
 
-
+        Dictionary<string, int> CountTheOccurrencesInService;
 
         NameComparer nameComparer = new NameComparer();
         List<WordsList> MyList = new List<WordsList>();//создаем лист наших классов
         void DictionaryToClass()
         {
 
-            foreach (KeyValuePair<string, int> kvp in ParallelCountTheOccurrences)//прописываем в них значения из словаря
+            foreach (KeyValuePair<string, int> kvp in CountTheOccurrencesInService)//прописываем в них значения из словаря
             {
 
                 MyList.Add(new WordsList() { NameWords = kvp.Key, CountWords = kvp.Value });
@@ -176,9 +176,9 @@ namespace BigTextReader_WF_
 
 
         void InputFile()
-        {
+        { 
             string assPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string path = assPath+ @"\TestResult.txt"; //System.Reflection.Assembly.GetExecutingAssembly().Location;
+            string path = assPath + @"\TestResult.txt"; //System.Reflection.Assembly.GetExecutingAssembly().Location;
             using (StreamWriter w = File.CreateText(path))
             {
                 foreach (var item in MyList)
@@ -205,19 +205,36 @@ namespace BigTextReader_WF_
 
 
 
-            // CountMethodTime(CallMyPrivateDictionary); //однопоточный  (Elapsed):00:00:01.8553234
+            // CountMethodTime(CallMyPrivateDictionary); //однопоточный словарь  (Elapsed):00:00:01.8553234
 
-               CountMethodTime(CallMyPublicDictionary);  //многопоточный (Elapsed):00:00:01.2943234
+            //  CountMethodTime(CallMyPublicDictionary);  //многопоточный словарь (Elapsed):00:00:01.294323
 
 
-
+            CountMethodTime(SvcExampleMy);
+            
 
             //  сортируем словарь
             DictionaryToClass();
 
             //  вывод списка слов в файл
             InputFile();
+        }
 
+       
+
+
+        //СЛОВАРЬ  вызванный через сервис
+
+        private void SvcExampleMy()
+        {
+
+            
+            using (var client = new ServiceReference1.Service2Client())
+            {
+                CountTheOccurrencesInService = client.CallMyPublicDictionaryFromService(modifietSrting);
+            }
+
+           // label2.Text = $"Bool= {ret.BoolValue}, Str = {ret.StringValue}, myProp = {ret.MyProp}";
         }
         
 
@@ -234,11 +251,11 @@ namespace BigTextReader_WF_
 
             stwh.Stop();
 
- 
+
             TimeSpan ts = stwh.Elapsed;
-            textBoxPath.Text = ($"Метод  / Время выполнения (Elapsed):{ stwh.Elapsed}");
-            Console.WriteLine($"Метод  / Время выполнения (Elapsed):{ stwh.Elapsed}");
-            Console.WriteLine($"Метод  / Время выполнения (TimeSpan):" + string.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10));
+            label2.Text = ($"Метод  / Время выполнения (Elapsed):{ stwh.Elapsed}");
+            //Console.WriteLine($"Метод  / Время выполнения (Elapsed):{ stwh.Elapsed}");
+            //Console.WriteLine($"Метод  / Время выполнения (TimeSpan):" + string.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10));
 
         }
 
